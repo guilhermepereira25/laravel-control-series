@@ -27,11 +27,16 @@ class Series extends Model
             $queryBuilder->orderBy('name');
         });
     }
-    
+
     public static function getAllSeries(): array
     {
         $series = DB::select('SELECT id, name FROM series;');
 
         return $series;
+    }
+
+    public static function getLastSerie(string $serieName)
+    {
+        return DB::table('series')->where('name', $serieName)->first();
     }
 }

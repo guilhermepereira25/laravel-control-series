@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CreateSeriesEvent;
 use App\Events\SeriesCreated;
 use App\Http\Interfaces\IFlashMessages;
 use App\Http\Middleware\AuthenticateSeries;
@@ -17,8 +18,8 @@ use App\Repositories\UserRepository;
 class SerieController extends Controller implements IFlashMessages
 {
     /**
-     * @param SeriesRepository
-     * @return void
+     * @param SeriesRepository $repository
+     * @param UserRepository $user
      */
     public function __construct(private SeriesRepository $repository, protected UserRepository $user)
     {
@@ -41,12 +42,21 @@ class SerieController extends Controller implements IFlashMessages
         return view('series.create');
     }
 
+    /**
+     * @param SeriesFormRequest $request
+     * @return RedirectResponse
+     */
     public function store(SeriesFormRequest $request): RedirectResponse
     {
-        //TODO: depois implementar listerner para tirar essa parte do código do controller (requer conhecimentos de patterns)
-        $serie = $this->repository->add($request);
+        CreateSeriesEvent::dispatch(
+            $request->name,
+            $request->seasonsQuantity,
+            $request->episodesQuantity
+        );
 
-        if (!$serie) {
+        $serie = Series::getLastSerie($request->name);
+
+        if (is_null($serie)) {
             return redirect()->back()->withErrors("Ocorreu um erro ao adicionar a série, tente novamente");
         }
 

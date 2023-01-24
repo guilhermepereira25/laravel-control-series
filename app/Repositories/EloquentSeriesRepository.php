@@ -2,11 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Events\CreateSeriesEvent;
 use App\Http\Requests\SeriesFormRequest;
 use App\Models\Episodes;
 use App\Models\Series;
 use App\Models\Seasons;
-use App\Repositories\SeriesRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -15,30 +15,32 @@ class EloquentSeriesRepository implements SeriesRepository
     /**
      * Método que cria uma série, temporada e episódios
      * rever depois porque o método não deveria receber como paramêtro o SeriesFormRequest $request
+     * agora está recebendo o CreateSeriesEvent
      *
-     * @param SeriesFormRequest
+     * @param CreateSeriesEvent
      * @return Series
      */
-    public function add(SeriesFormRequest $request): Series
+    public function add(CreateSeriesEvent $event): Series
     {
         try {
             DB::beginTransaction();
 
-            $serie = Series::create($request->only('name'));
+            $serie = Series::create([
+                'name' => $event->serieName
+            ]);
 
-            $seasons = [];
-            $seasons = Seasons::sumNumbersOfSeasons($request->seasonsQuantity, 'series_id', $serie->id);
+            $seasons = Seasons::sumNumbersOfSeasons($event->seasons, 'series_id', $serie->id);
 
             if ($seasons) {
                 Seasons::insert($seasons);
 
-                Episodes::createEpisodes($serie->seasons, $request->episodesQuantity);
+                Episodes::createEpisodes($serie->seasons, $event->episodesPerSeason);
             }
 
             DB::commit();
             return $serie;
         } catch (Exception $ex) {
-            $ex->getMessage();
+            return $ex->getMessage();
         } finally {
             DB::rollBack();
             return $serie;
@@ -59,7 +61,7 @@ class EloquentSeriesRepository implements SeriesRepository
 
             return $affected;
         } catch (Exception $ex) {
-            $ex->getMessage();
+            return $ex->getMessage();
         } finally {
             DB::rollBack();
 

@@ -20,10 +20,8 @@ class CreateSeriesEvent
      *
      * @return void
      */
-    public function __construct(SeriesFormRequest $request)
-    {
-        //
-    }
+    public function __construct(public string $serieName, public int $seasons, public int $episodesPerSeason)
+    {}
 
     /**
      * Get the channels the event should broadcast on.

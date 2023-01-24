@@ -25,7 +25,7 @@ class CreateSeriesListener
      * @param  CreateSeriesEvent $event
      * @return void
      */
-    public function handle(CreateSeriesEvent $event)
+    public function handle(CreateSeriesEvent $event): void
     {
         $this->repository->add($event);
     }
