@@ -14,6 +14,8 @@ use App\Models\Seasons;
 use App\Models\Episodes;
 use App\Repositories\SeriesRepository;
 use App\Repositories\UserRepository;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\File;
 
 class SerieController extends Controller implements IFlashMessages
 {
@@ -48,8 +50,17 @@ class SerieController extends Controller implements IFlashMessages
      */
     public function store(SeriesFormRequest $request): RedirectResponse
     {
+        $coverPath = null;
+
+        if ($request->hasFile('cover')) {
+            if ($this->validateImage($request->file())) {
+                $coverPath = $request->file('cover')->store('cover_series', 'public');
+            }
+        }
+
         CreateSeriesEvent::dispatch(
             $request->name,
+            $coverPath,
             $request->seasonsQuantity,
             $request->episodesQuantity
         );
@@ -75,7 +86,7 @@ class SerieController extends Controller implements IFlashMessages
 
     public function destroy(Series $series, Request $request)
     {
-        $this->repository->delete($series->id);
+        $this->repository->delete($series);
 
         $this->setFlashMessages($request, 'success.message', "Serie {$series->name} removida com sucesso");
 
@@ -94,7 +105,10 @@ class SerieController extends Controller implements IFlashMessages
 
         $episodes = Episodes::getEpisodesPerSeason($season_id[0]);
 
-        return view('series.edit')->with('series', $series)->with('seasons', $seasonQuantity)->with('episodes', $episodes);
+        return view('series.edit')
+            ->with('series', $series)
+            ->with('seasons', $seasonQuantity)
+            ->with('episodes', $episodes);
     }
 
     public function update(SeriesFormRequest $request, Series $series)
@@ -126,5 +140,14 @@ class SerieController extends Controller implements IFlashMessages
         $request->session()->forget($key);
 
         return $successMessage;
+    }
+
+    private function validateImage($file)
+    {
+        return Validator::validate($file, [
+            'cover' => [
+                File::image()->max(2 * 1024)
+            ]
+        ]);
     }
 }

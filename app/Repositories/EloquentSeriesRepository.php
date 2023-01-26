@@ -8,7 +8,10 @@ use App\Models\Episodes;
 use App\Models\Series;
 use App\Models\Seasons;
 use Exception;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class EloquentSeriesRepository implements SeriesRepository
 {
@@ -26,7 +29,8 @@ class EloquentSeriesRepository implements SeriesRepository
             DB::beginTransaction();
 
             $serie = Series::create([
-                'name' => $event->serieName
+                'name' => $event->serieName,
+                'cover' => $event->coverPath,
             ]);
 
             $seasons = Seasons::sumNumbersOfSeasons($event->seasons, 'series_id', $serie->id);
@@ -47,15 +51,23 @@ class EloquentSeriesRepository implements SeriesRepository
         }
     }
 
-    public function delete(int $serie_id): int
+    /**
+     * Este método pode retornar uma exception ou o número de rows afetadas pelo delete
+     * @param Series $serie
+     */
+    public function delete(Series $serie): mixed
     {
         try {
             DB::beginTransaction();
 
             $affected = DB::delete(
                 "DELETE FROM series WHERE id = :id",
-                [$serie_id]
+                [$serie->id]
             );
+
+            if (!is_null($serie->cover) && $affected == 1) {
+                Storage::disk('public')->delete($serie->cover);
+            }
 
             DB::commit();
 
@@ -64,8 +76,6 @@ class EloquentSeriesRepository implements SeriesRepository
             return $ex->getMessage();
         } finally {
             DB::rollBack();
-
-            return $affected;
         }
     }
 

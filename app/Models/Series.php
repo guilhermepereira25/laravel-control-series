@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 class Series extends Model
 {
     use HasFactory;
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'cover'];
     private string $name;
 
     public function seasons(): HasMany
@@ -30,7 +30,7 @@ class Series extends Model
 
     public static function getAllSeries(): array
     {
-        $series = DB::select('SELECT id, name FROM series;');
+        $series = DB::select('SELECT id, name, cover FROM series;');
 
         return $series;
     }
