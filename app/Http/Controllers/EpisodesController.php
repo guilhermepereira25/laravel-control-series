@@ -37,7 +37,8 @@ class EpisodesController extends Controller implements IFlashMessages
             return $to_route;
         }
 
-        Episodes::setWatchedEpisodes($watchedEpisodes);
+        $episodeObj = new Episodes();
+        $episodeObj->setWatchedEpisodes($watchedEpisodes);
 
         $this->setFlashMessages($request, 'success.message', "Episódios marcados como assistidos com sucesso");
 
@@ -46,6 +47,9 @@ class EpisodesController extends Controller implements IFlashMessages
 
     /**
      * Função que seta as mensagens
+     * @param Request $request
+     * @param string $key
+     * @param string $message
      * @return void
      */
     public function setFlashMessages(Request $request, string $key, string $message): void

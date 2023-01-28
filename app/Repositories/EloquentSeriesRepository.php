@@ -5,12 +5,11 @@ namespace App\Repositories;
 use App\Events\CreateSeriesEvent;
 use App\Http\Requests\SeriesFormRequest;
 use App\Models\Episodes;
+use App\Models\FailMessages;
 use App\Models\Series;
 use App\Models\Seasons;
 use Exception;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class EloquentSeriesRepository implements SeriesRepository
@@ -20,7 +19,7 @@ class EloquentSeriesRepository implements SeriesRepository
      * rever depois porque o método não deveria receber como paramêtro o SeriesFormRequest $request
      * agora está recebendo o CreateSeriesEvent
      *
-     * @param CreateSeriesEvent
+     * @param CreateSeriesEvent $event
      * @return Series
      */
     public function add(CreateSeriesEvent $event): Series
@@ -44,10 +43,7 @@ class EloquentSeriesRepository implements SeriesRepository
             DB::commit();
             return $serie;
         } catch (Exception $ex) {
-            return $ex->getMessage();
-        } finally {
-            DB::rollBack();
-            return $serie;
+            FailMessages::registerFailMessage(__METHOD__, "Erro ao inserir registro do banco EX => {$ex->getMessage()}");
         }
     }
 
@@ -55,7 +51,7 @@ class EloquentSeriesRepository implements SeriesRepository
      * Este método pode retornar uma exception ou o número de rows afetadas pelo delete
      * @param Series $serie
      */
-    public function delete(Series $serie): mixed
+    public function delete(Series $serie)
     {
         try {
             DB::beginTransaction();
@@ -73,9 +69,7 @@ class EloquentSeriesRepository implements SeriesRepository
 
             return $affected;
         } catch (Exception $ex) {
-            return $ex->getMessage();
-        } finally {
-            DB::rollBack();
+            FailMessages::registerFailMessage(__METHOD__, "Erro ao deletar registro do banco EX => {$ex->getMessage()}");
         }
     }
 
@@ -91,7 +85,6 @@ class EloquentSeriesRepository implements SeriesRepository
             //user no request, deletamos os registros para $series->id e depois inserimos os registros novamente
             //se for maior, (int) $countSeasons - (int) $request->seasonsQuantity = temporadas que precisamos adicionar
             $countSeasons = Seasons::getCountOfSeasonsPerSerie($series->id);
-            $newSeasons = [];
 
             if ($countSeasons < $request->seasonsQuantity) {
                 Seasons::deleteSeasons($series->id);

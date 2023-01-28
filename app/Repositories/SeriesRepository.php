@@ -10,7 +10,7 @@ interface SeriesRepository
 {
     public function add(CreateSeriesEvent $request): Series;
 
-    public function delete(Series $serie): mixed;
+    public function delete(Series $serie);
 
     public function update(SeriesFormRequest $request, Series $series);
 }

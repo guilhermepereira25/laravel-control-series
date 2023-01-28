@@ -25,13 +25,6 @@ class Episodes extends Model
         $query->where('watched', '=', 1);
     }
 
-    public static function getEpisodesBySerie(int $series_id)
-    {
-        $season = DB::table('seasons')->where('series_id', '=', $series_id)->first('id');
-
-        return $season->id;
-    }
-
     public static function getEpisodesPerSeason($season_id)
     {
         $episodes = DB::table('episodes')->where('season_id', '=', $season_id)->first('number');
@@ -51,7 +44,7 @@ class Episodes extends Model
         return $rows;
     }
 
-    public static function setWatchedEpisodes(array $watchedEpisodes)
+    public function setWatchedEpisodes(array $watchedEpisodes)
     {
         try {
             DB::beginTransaction();
