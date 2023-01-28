@@ -31,10 +31,15 @@ Route::middleware('auth')->group(function() {
         return redirect('/login');
     });
 
+    //seasons
     Route::get('/series/{series}/seasons', [SeasonsController::class, 'index'])->name('seasons.index');
 
+    //episodes
     Route::get('/series/seasons/{seasons}/episodes', [EpisodesController::class, 'index'])->name('episodes.index');
     Route::post('/seasons/{season}/episodes', [EpisodesController::class, 'update'])->name('episodes.update');
+
+    //logout somente logado
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
 
 Route::get('/', function() {
@@ -103,5 +108,3 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 
 Route::get('/register', [RegisterController::class, 'index'])->name('register');
 Route::post('/register', [RegisterController::class, 'create'])->name('register.create');
-
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
