@@ -142,7 +142,7 @@ class SerieController extends Controller implements IFlashMessages
         return $successMessage;
     }
 
-    private function validateImage($file)
+    private function validateImage($file): array
     {
         return Validator::validate($file, [
             'cover' => [
