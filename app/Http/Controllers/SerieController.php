@@ -10,7 +10,6 @@ use App\Http\Requests\SeriesFormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\Series;
-use App\Models\Seasons;
 use App\Models\Episodes;
 use App\Repositories\SeriesRepository;
 use App\Repositories\UserRepository;
@@ -95,19 +94,16 @@ class SerieController extends Controller implements IFlashMessages
 
     public function edit(Series $series)
     {
-        $seasons = Seasons::getSeasonForSerie($series->id);
+        $seasons = $series->seasons()->count('id');
 
-        $seasonQuantity = Seasons::getNumberOfSeasonsPerSerie($seasons);
+        $seasonObj = $series->seasons();
+        $seasonId = $seasonObj->first('id');
 
-        foreach ($seasons as $season) {
-            $season_id[] = $season->id;
-        }
-
-        $episodes = Episodes::getEpisodesPerSeason($season_id[0]);
+        $episodes = Episodes::getEpisodesPerSeason($seasonId->id);
 
         return view('series.edit')
             ->with('series', $series)
-            ->with('seasons', $seasonQuantity)
+            ->with('seasons', $seasons)
             ->with('episodes', $episodes);
     }
 

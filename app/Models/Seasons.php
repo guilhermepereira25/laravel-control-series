@@ -25,20 +25,6 @@ class Seasons extends Model
         return $this->hasMany(Episodes::class, 'season_id');
     }
 
-    /**
-     * Esse método retorna um array com as temporadas para séries (coluna id, number)
-     * 
-     * @param int $series_id
-     * @return array
-     */
-    public static function getSeasonForSerie(int $series_id): array
-    {
-        return DB::select(
-            "SELECT id, number FROM seasons WHERE series_id = :series_id", 
-            [$series_id]
-        );
-    }
-
     public static function getCountOfSeasonsPerSerie(int $series_id): int
     {
         return DB::table('seasons')
@@ -53,23 +39,6 @@ class Seasons extends Model
                         ->delete();
     }
 
-    /**
-     * Retorna o número de temporadas para série
-     * 
-     * @param int $season_id
-     * @return int
-     */
-    public static function getNumberOfSeasonsPerSerie(array $seasons): int
-    {
-        $numberSeasons = 0;
-
-        foreach ($seasons as $season) {
-            $numberSeasons += $season->number;
-        }
-
-        return $numberSeasons;
-    }
-
     public static function sumNumbersOfSeasons(int $quantity, string $column, int $id): array
     {
         for ($index = 1; $index <= $quantity; $index++) {
@@ -82,7 +51,7 @@ class Seasons extends Model
         return $values;
     }
 
-    public function numberOfWatchedEpisodes(): int 
+    public function numberOfWatchedEpisodes(): int
     {
         return $this->episodes
             ->filter(fn ($episode) => $episode->watched)

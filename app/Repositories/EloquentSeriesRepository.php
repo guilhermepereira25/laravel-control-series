@@ -22,7 +22,7 @@ class EloquentSeriesRepository implements SeriesRepository
      * @param CreateSeriesEvent $event
      * @return Series
      */
-    public function add(CreateSeriesEvent $event): Series
+    public function add(CreateSeriesEvent $event)
     {
         try {
             DB::beginTransaction();
@@ -33,17 +33,14 @@ class EloquentSeriesRepository implements SeriesRepository
             ]);
 
             $seasons = Seasons::sumNumbersOfSeasons($event->seasons, 'series_id', $serie->id);
+            Seasons::insert($seasons);
 
-            if ($seasons) {
-                Seasons::insert($seasons);
-
-                Episodes::createEpisodes($serie->seasons, $event->episodesPerSeason);
-            }
+            Episodes::createEpisodes($serie->seasons, $event->episodesPerSeason);
 
             DB::commit();
             return $serie;
         } catch (Exception $ex) {
-            FailMessages::registerFailMessage(__METHOD__, "Erro ao inserir registro do banco EX => {$ex->getMessage()}");
+            return FailMessages::registerFailMessage(__METHOD__, "Erro ao inserir registro do banco EX => {$ex->getMessage()}");
         }
     }
 
@@ -69,7 +66,7 @@ class EloquentSeriesRepository implements SeriesRepository
 
             return $affected;
         } catch (Exception $ex) {
-            FailMessages::registerFailMessage(__METHOD__, "Erro ao deletar registro do banco EX => {$ex->getMessage()}");
+            return FailMessages::registerFailMessage(__METHOD__, "Erro ao deletar registro do banco EX => {$ex->getMessage()}");
         }
     }
 

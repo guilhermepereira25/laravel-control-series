@@ -25,11 +25,9 @@ class Episodes extends Model
         $query->where('watched', '=', 1);
     }
 
-    public static function getEpisodesPerSeason($season_id)
+    public static function getEpisodesPerSeason($season_id): int
     {
-        $episodes = DB::table('episodes')->where('season_id', '=', $season_id)->first('number');
-
-        return $episodes->number;
+        return DB::table('episodes')->where('season_id', '=', $season_id)->count('id');
     }
 
     public function updateEpisodes(int $quantity, int $series_id): int

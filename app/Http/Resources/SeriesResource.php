@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Requests\SeriesFormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SeriesResource extends JsonResource
 {
+    public static $wrap = 'series';
+
     /**
      * Transform the resource into an array.
      *
@@ -15,5 +18,10 @@ class SeriesResource extends JsonResource
     public function toArray($request)
     {
         return parent::toArray($request);
+    }
+
+    public function create(SeriesFormRequest $request)
+    {
+        dd($request->all());
     }
 }
