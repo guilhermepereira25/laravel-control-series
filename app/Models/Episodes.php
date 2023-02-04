@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Exception;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,11 +14,21 @@ class Episodes extends Model
 {
     use HasFactory;
     protected $fillable = ['number', 'watched'];
+    protected $casts = [
+        'watched' => 'boolean'
+    ];
 
     public function seasons()
     {
         return $this->belongsTo(Seasons::class);
     }
+
+//    protected function watched(): Attribute
+//    {
+//        return new Attribute(
+//            get: fn ($watched) => (bool) $watched
+//        );
+//    }
 
     //scope watched olhar depois
     public function scopeWatched(Builder $query)
