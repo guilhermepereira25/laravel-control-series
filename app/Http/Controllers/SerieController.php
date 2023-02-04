@@ -22,7 +22,7 @@ class SerieController extends Controller implements IFlashMessages
      * @param SeriesRepository $repository
      * @param UserRepository $user
      */
-    public function __construct(private SeriesRepository $repository, protected UserRepository $user)
+    public function __construct(private SeriesRepository $repository)
     {
         $this->middleware(AuthenticateSeries::class)->except('index');
     }
@@ -66,10 +66,6 @@ class SerieController extends Controller implements IFlashMessages
 
         $serie = Series::getLastSerie($request->name);
 
-        if (is_null($serie)) {
-            return redirect()->back()->withErrors("Ocorreu um erro ao adicionar a série, tente novamente");
-        }
-
         SeriesCreated::dispatch(
             $serie->name,
             $serie->id,
@@ -109,7 +105,7 @@ class SerieController extends Controller implements IFlashMessages
 
     public function update(SeriesFormRequest $request, Series $series)
     {
-        $rows = $this->repository->update($request, $series);
+        $rows = $this->repository->update($request->except(['_token', '_method']), $series);
 
         if ($rows) {
             $this->setFlashMessages($request, 'success.message', "Serie {$series->name} atualizada com sucesso");

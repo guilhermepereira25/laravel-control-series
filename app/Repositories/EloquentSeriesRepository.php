@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Events\CreateSeriesEvent;
-use App\Http\Requests\SeriesFormRequest;
 use App\Models\Episodes;
 use App\Models\FailMessages;
 use App\Models\Series;
@@ -22,7 +21,7 @@ class EloquentSeriesRepository implements SeriesRepository
      * @param CreateSeriesEvent $event
      * @return Series
      */
-    public function add(CreateSeriesEvent $event)
+    public function add(CreateSeriesEvent $event): Series
     {
         try {
             DB::beginTransaction();
@@ -70,36 +69,32 @@ class EloquentSeriesRepository implements SeriesRepository
         }
     }
 
-    public function update(SeriesFormRequest $request, Series $series)
+    public function update(array $data, Series $series): int
     {
         $rows = DB::update(
             "UPDATE series SET name = :name WHERE id = :id",
-            [$request->name, $series->id]
+            [$data['name'], $series->id]
         );
 
-        if ($rows) {
+        if (array_key_exists('episodesQuantity', $data) && array_key_exists('seasonsQuantity', $data)) {
             //lógica do update foi um pouco complexa, aqui, se o número de temporadas que já existem for menor que o número informado pelo
             //user no request, deletamos os registros para $series->id e depois inserimos os registros novamente
             //se for maior, (int) $countSeasons - (int) $request->seasonsQuantity = temporadas que precisamos adicionar
             $countSeasons = Seasons::getCountOfSeasonsPerSerie($series->id);
 
-            if ($countSeasons < $request->seasonsQuantity) {
+            $seasons = $data['seasonsQuantity'];
+            $episodes = $data['episodesQuantity'];
+
+            if ($countSeasons < $seasons) {
                 Seasons::deleteSeasons($series->id);
-
-                $newSeasons = Seasons::sumNumbersOfSeasons($request->seasonsQuantity, 'series_id', $series->id);
-
-                Seasons::insert($newSeasons);
-
-                Episodes::createEpisodes($series->seasons, $request->episodesQuantity);
+                $newSeasons = Seasons::sumNumbersOfSeasons($seasons, 'series_id', $series->id);
             } else {
-                $seasonToAdd = (int) $countSeasons - (int) $request->seasonsQuantity;
-
+                $seasonToAdd = $countSeasons - (int) $seasons;
                 $newSeasons = Seasons::sumNumbersOfSeasons($seasonToAdd, 'series_id', $series->id);
-
-                Seasons::insert($newSeasons);
-
-                Episodes::createEpisodes($series->seasons, $request->episodesQuantity);
             }
+
+            Seasons::insert($newSeasons);
+            Episodes::createEpisodes($series->seasons, $episodes);
         }
 
         return $rows;

@@ -3,9 +3,7 @@
 namespace App\Repositories;
 
 use App\Events\CreateSeriesEvent;
-use App\Http\Requests\SeriesFormRequest;
 use App\Models\Series;
-use Exception;
 
 interface SeriesRepository
 {
@@ -13,5 +11,5 @@ interface SeriesRepository
 
     public function delete(Series $serie);
 
-    public function update(SeriesFormRequest $request, Series $series);
+    public function update(array $data, Series $series);
 }
