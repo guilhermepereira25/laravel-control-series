@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\DB;
 use App\Models\Seasons;
 use Exception;
@@ -21,6 +22,16 @@ class Series extends Model
         return $this->hasMany(Seasons::class, 'series_id');
     }
 
+    public function episodes(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Episodes::class,
+            Seasons::class,
+            'series_id',
+            'season_id'
+        );
+    }
+
     protected static function booted(): void
     {
         static::addGlobalScope('ordered', function (Builder $queryBuilder) {
@@ -30,9 +41,7 @@ class Series extends Model
 
     public static function getAllSeries(): array
     {
-        $series = DB::select('SELECT id, name, cover FROM series;');
-
-        return $series;
+        return DB::select('SELECT id, name, cover FROM series;');
     }
 
     public static function getLastSerie(string $serieName)
