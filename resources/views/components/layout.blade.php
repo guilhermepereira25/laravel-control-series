@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    @vite(['resources/sass/app.scss', 'resources/js/app.js', 'resources/js/modal.js'])
 
     <title>{{ $title }}</title>
 </head>
@@ -56,7 +56,7 @@
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
-                                    </form> 
+                                    </form>
                                 </div>
                             </li>
                         @endguest
@@ -74,7 +74,7 @@
                 </ul>
             </div>
         @endif
-        
+
         <main class="container mt-3">
             @isset($successMessage)
                 <div class="alert alert-success">
