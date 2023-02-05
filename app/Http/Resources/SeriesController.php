@@ -7,6 +7,7 @@ use App\Http\Requests\SeriesApiRequest;
 use App\Models\Series;
 use App\Repositories\SeriesRepository;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
@@ -18,9 +19,17 @@ class SeriesController
     {
     }
 
-    public function index(): SeriesCollection
+    public function index(Request $request): SeriesCollection | JsonResponse
     {
-        return new SeriesCollection(Series::all());
+        if (!$request->has('name')) {
+            $query = Series::query();
+            $seriesCollection = $query->paginate(5);
+            return new SeriesCollection($seriesCollection);
+        }
+
+        $seriesCollection = Series::where('name', 'LIKE', '%' . $request->name . '%')->get();
+
+        return !$seriesCollection->isNotEmpty() ? response()->json(['success' => 'false', 'error' => 'serie not found'], 404) : new SeriesCollection($seriesCollection);
     }
 
     /**
@@ -33,11 +42,7 @@ class SeriesController
     {
         $seriesCollection = Series::whereId($id)->with('seasons.episodes')->get();
 
-        if (!$seriesCollection->isNotEmpty()) {
-            return response()->json(['success' => 'false', 'error' => 'serie not found'], 404);
-        }
-
-        return new SeriesResource($seriesCollection);
+        return !$seriesCollection->isNotEmpty() ? response()->json(['success' => 'false', 'error' => 'serie not found'], 404) : new SeriesResource($seriesCollection);
     }
 
     /**

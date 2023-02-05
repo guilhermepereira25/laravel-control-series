@@ -39,11 +39,6 @@ class Series extends Model
         });
     }
 
-    public static function getAllSeries(): array
-    {
-        return DB::select('SELECT id, name, cover FROM series;');
-    }
-
     public static function getLastSerie(string $serieName)
     {
         return DB::table('series')->where('name', $serieName)->first();

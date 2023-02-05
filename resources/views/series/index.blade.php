@@ -1,7 +1,25 @@
 <x-layout title="Series" :successMessage="$successMessage">
-    @auth
-        <a href="{{ route('series.create') }}" class="btn btn-primary mb-3">Adicionar</a>
-    @endauth
+    <div class="container text-start">
+        <div class="row align-items-center">
+            <div class="col">
+                @auth
+                    <a href="{{ route('series.create') }}" class="btn btn-primary mb-3">Adicionar</a>
+                @endauth
+            </div>
+
+            <div class="col-6">
+                <p class="text-center fs-4">Sistema de Séries</p>
+            </div>
+
+            <div class="col">
+                <nav aria-label="pagination series">
+                    <ul class="justify-content-end">
+                        {{ $series->links() }}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
 
     <ul class="list-group">
         @foreach ($series as $serie)
@@ -26,10 +44,10 @@
                         </span>
 
                         <span class="ms-2">
-                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#myModal">E</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#myModal{{$serie->id}}">E</button>
                         </span>
 
-                        <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModal" aria-hidden="true">
+                        <div class="modal fade" id="myModal{{$serie->id}}" tabindex="-1" aria-labelledby="myModal" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">

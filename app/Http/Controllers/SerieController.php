@@ -13,6 +13,7 @@ use App\Models\Series;
 use App\Models\Episodes;
 use App\Repositories\SeriesRepository;
 use App\Repositories\UserRepository;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;
 
@@ -20,7 +21,6 @@ class SerieController extends Controller implements IFlashMessages
 {
     /**
      * @param SeriesRepository $repository
-     * @param UserRepository $user
      */
     public function __construct(private SeriesRepository $repository)
     {
@@ -29,7 +29,8 @@ class SerieController extends Controller implements IFlashMessages
 
     public function index(Request $request)
     {
-        $series = Series::getAllSeries();
+        $query = Series::query();
+        $series = $query->paginate(5);
 
         $successMessage = $this->manipulateFlashMessages($request, 'success.message');
 
