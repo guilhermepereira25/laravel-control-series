@@ -13,7 +13,7 @@ class RegisterController extends Controller
      */
     public function __construct(protected UserRepository $users)
     {
-        
+
     }
 
     public function index()
@@ -25,14 +25,14 @@ class RegisterController extends Controller
     {
         $data = $request->all();
 
-        $validate = $this->validator($data);
+        $validator = $this->validator($data);
 
-        if (!$validate) {
+        if ($validator->fails()) {
             return redirect()->back()->withErrors('Por favor, preencha os campos corretamente');
-        } 
+        }
 
         $this->users->create($data);
-        
+
         return to_route('login');
     }
 
