@@ -19,9 +19,4 @@ class SeriesResource extends JsonResource
     {
         return parent::toArray($request);
     }
-
-    public function create(SeriesFormRequest $request)
-    {
-        dd($request->all());
-    }
 }

@@ -3,20 +3,25 @@
 namespace App\Http\Resources;
 
 use App\Events\CreateSeriesEvent;
+use App\Http\Controllers\Controller;
+use App\Http\Middleware\AuthenticateSeriesResource;
 use App\Http\Requests\SeriesApiRequest;
 use App\Models\Series;
+use App\Models\User;
 use App\Repositories\SeriesRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;
 
-class SeriesController
+class SeriesController extends Controller
 {
     public function __construct(private SeriesRepository $repository)
     {
+        $this->middleware(AuthenticateSeriesResource::class)->except('login');
     }
 
     public function index(Request $request): SeriesCollection | JsonResponse
@@ -24,6 +29,7 @@ class SeriesController
         if (!$request->has('name')) {
             $query = Series::query();
             $seriesCollection = $query->paginate(5);
+
             return new SeriesCollection($seriesCollection);
         }
 
@@ -130,5 +136,48 @@ class SeriesController
                 File::image()->max(2 * 1024)
             ]
         ]);
+    }
+
+    private function generateManualJWT(): string
+    {
+        $token  = base64_encode(random_bytes(12));
+        $secret = base64_encode(random_bytes(24));
+
+        $header = [
+            'alg' => 'HS256',
+            'typ' => 'JWT'
+        ];
+
+        $payload = [
+            'token' => $token
+        ];
+
+        $jwt = sprintf(
+            '%s.%s',
+            $this->manipulateJWT(json_encode($header)),
+            $this->manipulateJWT(json_encode($payload))
+        );
+
+        return sprintf(
+            '%s.%s',
+            $jwt,
+            $this->manipulateJWT(hash_hmac('SHA256', $jwt, base64_decode($secret), true))
+        );
+    }
+
+    private function manipulateJWT($data): string
+    {
+        //codifica os dados com MIME base64
+        $base_64_encode = base64_encode($data);
+
+        if (!$base_64_encode) {
+            return false;
+        }
+
+        //translate characters or replace substring
+        $url = strtr($base_64_encode, '+/', '-_');
+
+        //remove espaço em branco no final da string
+        return rtrim($url, '=');
     }
 }
